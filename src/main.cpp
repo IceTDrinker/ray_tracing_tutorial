@@ -60,7 +60,9 @@ color ray_color(const ray& r, const hittable& world, int depth)
         ray scattered;
         color attenuation;
         if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+        {
             return attenuation * ray_color(scattered, world, depth - 1);
+        }
         return color(0, 0, 0);
     }
 
@@ -96,10 +98,12 @@ int main(int /*argc*/, char* /*argv[]*/)
     auto out_filename = output_dir + currentDateTime() + ".png";
 
     hittable_list world;
-    world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(0.7, 0.3, 0.3))));
+    //world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(0.7, 0.3, 0.3))));
+    world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<dielectric>(1.5)));
     world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100, std::make_shared<lambertian>(color(0.8, 0.8, 0.0))));
-    world.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.6, 0.2))));
-    world.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.8, 0.8))));
+    world.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.6, 0.2), 1.0)));
+    //world.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.8, 0.8), 0.3)));
+    world.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<dielectric>(1.5)));
     camera cam{aspect_ratio};
 
     auto process_rows = [&](int start_j, int stop_j)
