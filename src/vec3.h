@@ -148,6 +148,19 @@ inline vec3 random_unit_vector()
     // radius rho = 1
     auto a = random_double(0, 2 * pi);
     auto z = random_double(-1, 1); // z = rho * cos(theta) = cos(theta) here
-    auto r = sqrt(1 - z * z); // r = sin(theta) here
+    auto r = sqrt(1 - z * z); // r = sin(theta) here so that sin(theta) > 0
     return vec3(r * cos(a), r * sin(a), z); // those are spheric coordinates for rho = 1
+}
+
+inline vec3 random_in_hemisphere(const vec3& normal)
+{
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if (dot(in_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
+    {
+        return in_unit_sphere;
+    }
+    else
+    {
+        return -in_unit_sphere;
+    }
 }
