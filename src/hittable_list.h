@@ -1,14 +1,9 @@
 #pragma once
 
-#include "hittable.h"
-
-// No warnings from external headers
-#pragma warning(push, 0)
-
 #include <memory>
 #include <vector>
 
-#pragma warning(pop)
+#include "hittable.h"
 
 class hittable_list : public hittable
 {

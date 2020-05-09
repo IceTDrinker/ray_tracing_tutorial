@@ -1,6 +1,3 @@
-// No warnings from external headers
-#pragma warning(push, 0)
-
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
@@ -14,6 +11,9 @@
 
 namespace fs = std::filesystem;
 
+// No warnings from external headers
+#pragma warning(push, 0)
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
@@ -24,6 +24,7 @@ namespace fs = std::filesystem;
 #include "camera.h"
 #include "color.h"
 #include "hittable_list.h"
+#include "material.h"
 #include "ray.h"
 #include "sphere.h"
 #include "vec3.h"
@@ -56,10 +57,11 @@ color ray_color(const ray& r, const hittable& world, int depth)
 
     if (world.hit(r, 0.001, infinity, rec))
     {
-        //point3 target = rec.p + rec.normal + random_in_unit_sphere(); // approximate Lambertian hack, not that good apparently
-        point3 target = rec.p + rec.normal + random_unit_vector(); // Lambertian diffusion
-        //point3 target = rec.p + random_in_hemisphere(rec.normal); // Hemishperic diffusion
-        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
+        ray scattered;
+        color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered))
+            return attenuation * ray_color(scattered, world, depth - 1);
+        return color(0, 0, 0);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -94,8 +96,10 @@ int main(int /*argc*/, char* /*argv[]*/)
     auto out_filename = output_dir + currentDateTime() + ".png";
 
     hittable_list world;
-    world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5));
-    world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100));
+    world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(0.7, 0.3, 0.3))));
+    world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100, std::make_shared<lambertian>(color(0.8, 0.8, 0.0))));
+    world.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.6, 0.2))));
+    world.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<metal>(color(0.8, 0.8, 0.8))));
     camera cam{aspect_ratio};
 
     auto process_rows = [&](int start_j, int stop_j)

@@ -1,13 +1,7 @@
 #pragma once
 
-// No warnings from external headers
-#pragma warning(push, 0)
-
-#include <random>
-
 #include <limits>
-
-#pragma warning(pop)
+#include <random>
 
 // Constants
 
