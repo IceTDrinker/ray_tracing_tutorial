@@ -45,12 +45,19 @@ const std::string currentDateTime()
     return buf;
 }
 
-color ray_color(const ray& r, const hittable& world)
+color ray_color(const ray& r, const hittable& world, int depth)
 {
     hit_record rec;
-    if (world.hit(r, 0, infinity, rec))
+    // If we've exceeded the ray bounce limit, no more light is gathered.
+    if (depth <= 0)
     {
-        return 0.5 * (rec.normal + color(1, 1, 1));
+        return color(0, 0, 0);
+    }
+
+    if (world.hit(r, 0.001, infinity, rec))
+    {
+        point3 target = rec.p + rec.normal + random_unit_vector();
+        return 0.5 * ray_color(ray(rec.p, target - rec.p), world, depth - 1);
     }
 
     vec3 unit_direction = unit_vector(r.direction());
@@ -66,6 +73,7 @@ int main(int /*argc*/, char* /*argv[]*/)
     static constexpr const int num_channels = 3;
     static constexpr const int samples_per_pixel = 100;
     static constexpr const int num_threads = 8;
+    static constexpr const int max_depth = 50;
 
     auto image = std::vector<unsigned char>(image_width * image_height * num_channels);
 
@@ -99,9 +107,11 @@ int main(int /*argc*/, char* /*argv[]*/)
                 for (int s = 0; s < samples_per_pixel; ++s)
                 {
                     auto u = (i + random_double()) / (image_width - 1);
-                    auto v = (image_height - 1 - j + random_double()) / (image_height - 1);
+                    // Axis y is inverted in conventional images (a png is written below), invert j
+                    auto inverted_j = image_height - 1 - j;
+                    auto v = (inverted_j + random_double()) / (image_height - 1);
                     ray r = cam.get_ray(u, v);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, world, max_depth);
                 }
                 auto pixel_index = num_channels * (j * image_width + i);
                 write_color(&image.data()[pixel_index], pixel_color, samples_per_pixel);
