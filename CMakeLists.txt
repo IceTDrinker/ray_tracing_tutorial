@@ -27,6 +27,9 @@ endif()
 # Executable
 add_executable(${EXECUTABLE_NAME} ${HEADER_FILES} ${SRC_FILES} ${EDITOR_CFG_FILES})
 
+# stb for image manipulation
+target_include_directories(${EXECUTABLE_NAME} SYSTEM PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/stb")
+
 # MSVC specifics
 if(MSVC)
     # Remove the console when running the program
