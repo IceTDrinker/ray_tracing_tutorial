@@ -14,6 +14,8 @@ namespace fs = std::filesystem;
 
 #pragma warning(pop)
 
+#include "color.h"
+
 static constexpr const char* output_dir = "outputs";
 
 // Source : https://stackoverflow.com/questions/997946/how-to-get-current-time-and-date-in-c
@@ -63,15 +65,8 @@ int main(int /*argc*/, char* /*argv[]*/)
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i)
         {
-            auto r = double(i) / (image_width - 1);
-            auto g = double(j) / (image_height - 1);
-            auto b = 0.25;
-
-            int ir = static_cast<int>(255.999 * r);
-            int ig = static_cast<int>(255.999 * g);
-            int ib = static_cast<int>(255.999 * b);
-
-            outstream << ir << ' ' << ig << ' ' << ib << ' ';
+            color pixel_color(double(i) / (image_width - 1), double(j) / (image_height - 1), 0.25);
+            write_color(outstream, pixel_color);
         }
         outstream << "\n";
     }
