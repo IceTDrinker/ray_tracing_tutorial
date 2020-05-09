@@ -6,12 +6,26 @@
 class camera
 {
 public:
-    camera(double aspect_ratio)
+    camera(
+        point3 lookfrom, point3 lookat, vec3 vup,
+        double vfov, // vertical field-of-view in degrees
+        double aspect_ratio
+    )
     {
-        origin = point3(0.0, 0.0, 0.0);
-        horizontal = vec3(4.0, 0.0, 0.0);
-        vertical = vec3(0.0, horizontal.x() / aspect_ratio, 0.0);
-        lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, 1);
+        origin = lookfrom;
+        vec3 u, v, w;
+
+        auto theta = degrees_to_radians(vfov);
+        auto half_height = tan(theta / 2);
+        auto half_width = aspect_ratio * half_height;
+        w = unit_vector(lookfrom - lookat);
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
+
+        lower_left_corner = origin - half_width * u - half_height * v - w;
+
+        horizontal = 2 * half_width * u;
+        vertical = 2 * half_height * v;
     }
 
     ray get_ray(double u, double v) const

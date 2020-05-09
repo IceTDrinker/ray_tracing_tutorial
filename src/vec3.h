@@ -169,6 +169,6 @@ inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat)
 {
     auto cos_theta = dot(-uv, n);
     vec3 r_out_parallel = etai_over_etat * (uv + cos_theta * n); // parallel to the surface in the direction of propagation
-    vec3 r_out_perp = -sqrt(1.0 - r_out_parallel.length_squared()) * n; // perpendicular to the surface, opposite to normal as the ray goes in
+    vec3 r_out_perp = -std::sqrt(1.0 - r_out_parallel.length_squared()) * n; // perpendicular to the surface, opposite to normal as the ray goes in
     return r_out_parallel + r_out_perp;
 }
