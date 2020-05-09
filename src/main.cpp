@@ -20,6 +20,7 @@ namespace fs = std::filesystem;
 
 #include "rtweekend.h"
 
+#include "camera.h"
 #include "color.h"
 #include "hittable_list.h"
 #include "ray.h"
@@ -62,6 +63,7 @@ int main(int /*argc*/, char* /*argv[]*/)
     static constexpr const int image_width = 1920;
     static constexpr const int image_height = static_cast<int>(image_width / aspect_ratio);
     static constexpr const int num_channels = 3;
+    static constexpr const int samples_per_pixel = 100;
 
     auto image = std::vector<unsigned char>(image_width * image_height * num_channels);
 
@@ -79,26 +81,26 @@ int main(int /*argc*/, char* /*argv[]*/)
 
     auto out_filename = output_dir + currentDateTime() + ".png";
 
-    point3 origin(0.0, 0.0, 0.0);
-    vec3 horizontal(4.0, 0.0, 0.0);
-    vec3 vertical(0.0, horizontal.x() / aspect_ratio, 0.0);
-    point3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, 1);
-
     hittable_list world;
     world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5));
     world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100));
+    camera cam{aspect_ratio};
 
     for (int j = image_height - 1; j >= 0; --j)
     {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
         for (int i = 0; i < image_width; ++i)
         {
-            auto u = double(i) / (image_width - 1);
-            auto v = double(image_height - 1 - j) / (image_height - 1); // Image data is inverted on the y axis because of chosen coordinate system
-            ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-            color pixel_color = ray_color(r, world);
+            color pixel_color(0, 0, 0);
+            for (int s = 0; s < samples_per_pixel; ++s)
+            {
+                auto u = (i + random_double()) / (image_width - 1);
+                auto v = (image_height - 1 - j + random_double()) / (image_height - 1);
+                ray r = cam.get_ray(u, v);
+                pixel_color += ray_color(r, world);
+            }
             auto pixel_index = num_channels * (j * image_width + i);
-            write_color(&image.data()[pixel_index], pixel_color);
+            write_color(&image.data()[pixel_index], pixel_color, samples_per_pixel);
         }
     }
 
