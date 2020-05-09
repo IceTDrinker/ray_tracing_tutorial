@@ -1,12 +1,13 @@
 // No warnings from external headers
 #pragma warning(push, 0)
 
+#include <cmath>
 #include <cstdlib>
 #include <ctime>
 
 #include <filesystem>
-#include <fstream>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
@@ -17,8 +18,13 @@ namespace fs = std::filesystem;
 
 #pragma warning(pop)
 
+#include "rtweekend.h"
+
 #include "color.h"
+#include "hittable_list.h"
 #include "ray.h"
+#include "sphere.h"
+#include "vec3.h"
 
 static constexpr const char* output_dir = "outputs/";
 
@@ -37,35 +43,16 @@ const std::string currentDateTime()
     return buf;
 }
 
-double hit_sphere(const point3& center, double radius, const ray& r)
+color ray_color(const ray& r, const hittable& world)
 {
-    vec3 oc = r.origin() - center;
-    auto a = r.direction().length_squared();
-    auto half_b = dot(oc, r.direction());
-    auto c = oc.length_squared() - radius * radius;
-    auto discriminant = half_b * half_b - a * c;
-
-    if (discriminant < 0)
+    hit_record rec;
+    if (world.hit(r, 0, infinity, rec))
     {
-        return -1.0;
-    }
-    else
-    {
-        return (-half_b - std::sqrt(discriminant)) / a;
-    }
-}
-
-color ray_color(const ray& r)
-{
-    auto t = hit_sphere(point3(0, 0, -1), 0.5, r);
-    if (t > 0.0)
-    {
-        vec3 N = unit_vector(r.at(t) - vec3(0, 0, -1));
-        return 0.5 * color(N.x() + 1, N.y() + 1, N.z() + 1);
+        return 0.5 * (rec.normal + color(1, 1, 1));
     }
 
     vec3 unit_direction = unit_vector(r.direction());
-    t = 0.5 * (unit_direction.y() + 1.0);
+    auto t = 0.5 * (unit_direction.y() + 1.0);
     return (1.0 - t) * color(1.0, 1.0, 1.0) + t * color(0.5, 0.7, 1.0);
 }
 
@@ -97,6 +84,10 @@ int main(int /*argc*/, char* /*argv[]*/)
     vec3 vertical(0.0, horizontal.x() / aspect_ratio, 0.0);
     point3 lower_left_corner = origin - horizontal / 2 - vertical / 2 - vec3(0, 0, 1);
 
+    hittable_list world;
+    world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5));
+    world.add(std::make_shared<sphere>(point3(0, -100.5, -1), 100));
+
     for (int j = image_height - 1; j >= 0; --j)
     {
         std::cerr << "\rScanlines remaining: " << j << ' ' << std::flush;
@@ -105,7 +96,7 @@ int main(int /*argc*/, char* /*argv[]*/)
             auto u = double(i) / (image_width - 1);
             auto v = double(image_height - 1 - j) / (image_height - 1); // Image data is inverted on the y axis because of chosen coordinate system
             ray r(origin, lower_left_corner + u * horizontal + v * vertical);
-            color pixel_color = ray_color(r);
+            color pixel_color = ray_color(r, world);
             auto pixel_index = num_channels * (j * image_width + i);
             write_color(&image.data()[pixel_index], pixel_color);
         }
