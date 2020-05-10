@@ -26,6 +26,7 @@ namespace fs = std::filesystem;
 #include "color.h"
 #include "hittable_list.h"
 #include "material.h"
+#include "moving_sphere.h"
 #include "ray.h"
 #include "sphere.h"
 #include "vec3.h"
@@ -78,9 +79,9 @@ hittable_list random_scene()
 
     world.add(std::make_shared<sphere>(point3(0, -1000, 0), 1000, std::make_shared<lambertian>(color(0.5, 0.5, 0.5))));
 
-    for (int a = -11; a < 11; a++)
+    for (int a = -10; a < 10; a++)
     {
-        for (int b = -11; b < 11; b++)
+        for (int b = -10; b < 10; b++)
         {
             auto choose_mat = random_double();
             point3 center(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
@@ -90,14 +91,15 @@ hittable_list random_scene()
                 {
                     // diffuse
                     auto albedo = color::random() * color::random();
-                    world.add(
-                        std::make_shared<sphere>(center, 0.2, std::make_shared<lambertian>(albedo)));
+                    world.add(std::make_shared<moving_sphere>(
+                        center, center + vec3(0, random_double(0.0, 0.5), 0.0), 0.0, 1.0, 0.2,
+                        std::make_shared<lambertian>(albedo)));
                 }
                 else if (choose_mat < 0.95)
                 {
                     // metal
-                    auto albedo = color::random(.5, 1);
-                    auto fuzz = random_double(0, .5);
+                    auto albedo = color::random(0.5, 1.0);
+                    auto fuzz = random_double(0.0, 0.5);
                     world.add(
                         std::make_shared<sphere>(center, 0.2, std::make_shared<metal>(albedo, fuzz)));
                 }
@@ -111,10 +113,8 @@ hittable_list random_scene()
     }
 
     world.add(std::make_shared<sphere>(point3(0, 1, 0), 1.0, std::make_shared<dielectric>(1.5)));
-
-    world.add(std::make_shared<sphere>(point3(-4, 1, 0), 1.0, std::make_shared<lambertian>(color(.4, .2, .1))));
-
-    world.add(std::make_shared<sphere>(point3(4, 1, 0), 1.0, std::make_shared<metal>(color(.7, .6, .5), 0.0)));
+    world.add(std::make_shared<sphere>(point3(-4, 1, 0), 1.0, std::make_shared<lambertian>(color(0.4, 0.2, 0.1))));
+    world.add(std::make_shared<sphere>(point3(4, 1, 0), 1.0, std::make_shared<metal>(color(0.7, 0.6, 0.5), 0.0)));
 
     return world;
 }
@@ -145,13 +145,23 @@ int main(int /*argc*/, char* /*argv[]*/)
 
     auto out_filename = output_dir + currentDateTime() + ".png";
 
+    // Camera with exposure time
     point3 lookfrom(13, 2, 3);
     point3 lookat(0, 0, 0);
     vec3 vup(0, 1, 0);
     auto dist_to_focus = 10.0;
-    auto aperture = 0.1;
+    auto aperture = 0.0;
 
-    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
+    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+
+    // Defocus blur aka depth of field
+    //point3 lookfrom(13, 2, 3);
+    //point3 lookat(0, 0, 0);
+    //vec3 vup(0, 1, 0);
+    //auto dist_to_focus = 10.0;
+    //auto aperture = 0.1;
+
+    //camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
     auto world = random_scene();
 
