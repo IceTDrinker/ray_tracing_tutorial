@@ -172,3 +172,24 @@ inline vec3 refract(const vec3& uv, const vec3& n, double etai_over_etat)
     vec3 r_out_perp = -std::sqrt(1.0 - r_out_parallel.length_squared()) * n; // perpendicular to the surface, opposite to normal as the ray goes in
     return r_out_parallel + r_out_perp;
 }
+
+inline vec3 random_in_unit_disk()
+{
+    while (true)
+    {
+        auto p = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (p.length_squared() >= 1)
+        {
+            continue;
+        }
+        return p;
+
+
+        // The distribution of the following code is most likely skewed, keeping it here for now
+        // might investigate
+        //auto radius = random_double();
+        //auto theta = random_double(0, 2 * pi);
+
+        //return vec3(radius * std::cos(theta), radius * std::sin(theta), 0.0);
+    }
+}
