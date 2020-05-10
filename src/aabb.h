@@ -11,7 +11,19 @@ class aabb
 {
 public:
     aabb() {}
-    aabb(const point3& a, const point3& b) { _min = a; _max = b; }
+    aabb(const point3& a, const point3& b)
+    {
+        point3 small(std::fmin(a.x(), b.x()),
+                     std::fmin(a.y(), b.y()),
+                     std::fmin(a.z(), b.z()));
+
+        point3 big(std::fmax(a.x(), b.x()),
+                   std::fmax(a.y(), b.y()),
+                   std::fmax(a.z(), b.z()));
+
+        _min = small;
+        _max = big;
+    }
 
     point3 min() const { return _min; }
     point3 max() const { return _max; }
