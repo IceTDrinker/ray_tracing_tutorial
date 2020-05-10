@@ -15,6 +15,8 @@ inline double degrees_to_radians(double degrees)
     return degrees * pi / 180.0;
 }
 
+// This is not threadsafe, rand() is thread safe depending on implementation
+// I'm not going to fight for this for now
 inline double random_double()
 {
     static std::uniform_real_distribution<double> distribution(0.0, 1.0);

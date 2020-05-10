@@ -1,3 +1,9 @@
 [submodule "thirdparty/stb"]
 	path = thirdparty/stb
 	url = https://github.com/nothings/stb.git
+[submodule "thirdparty/vectorclass/version2"]
+	path = thirdparty/vectorclass/version2
+	url = https://github.com/vectorclass/version2.git
+[submodule "thirdparty/vectorclass/add-on"]
+	path = thirdparty/vectorclass/add-on
+	url = https://github.com/vectorclass/add-on.git

@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <chrono>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -15,7 +16,7 @@ namespace fs = std::filesystem;
 #pragma warning(push, 0)
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
-#include <stb_image_write.h>
+#include <stb/stb_image_write.h>
 
 #pragma warning(pop)
 
@@ -195,6 +196,8 @@ int main(int /*argc*/, char* /*argv[]*/)
     auto work_size = image_height / num_threads;
     auto remaining_work = image_height % num_threads;
 
+    auto start = std::chrono::high_resolution_clock::now();
+
     for (auto thread_idx = 0; thread_idx < num_threads; ++thread_idx)
     {
         auto start_row = thread_idx * work_size;
@@ -214,9 +217,13 @@ int main(int /*argc*/, char* /*argv[]*/)
         thread.join();
     }
 
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::cerr << "Ray tracing took : " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << " seconds" << std::endl;
+
     stbi_write_png(out_filename.c_str(), image_width, image_height, 3, image.data(), image_width * num_channels * sizeof(unsigned char));
 
-    std::cerr << "Done.\n";
+    std::cerr << "Done." << std::endl;;
 
     return EXIT_SUCCESS;
 }
