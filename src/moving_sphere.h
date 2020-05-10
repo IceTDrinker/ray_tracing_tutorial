@@ -2,6 +2,10 @@
 
 #include <memory>
 
+#include "hittable.h"
+#include "material.h"
+#include "vec3.h"
+
 class moving_sphere : public hittable
 {
 public:
@@ -41,26 +45,27 @@ bool moving_sphere::hit(
     if (discriminant > 0)
     {
         auto root = sqrt(discriminant);
-
         auto temp = (-half_b - root) / a;
-        if (temp < t_max && temp > t_min)
+
+        auto fill_sphere_hit_record = [&]()
         {
             rec.t = temp;
             rec.p = r.at(rec.t);
             auto outward_normal = (rec.p - center(r.time())) / radius;
             rec.set_face_normal(r, outward_normal);
             rec.mat_ptr = mat_ptr;
+        };
+
+        if (temp < t_max && temp > t_min)
+        {
+            fill_sphere_hit_record();
             return true;
         }
 
         temp = (-half_b + root) / a;
         if (temp < t_max && temp > t_min)
         {
-            rec.t = temp;
-            rec.p = r.at(rec.t);
-            auto outward_normal = (rec.p - center(r.time())) / radius;
-            rec.set_face_normal(r, outward_normal);
-            rec.mat_ptr = mat_ptr;
+            fill_sphere_hit_record();
             return true;
         }
     }
