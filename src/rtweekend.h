@@ -34,6 +34,23 @@ inline double random_double(double min, double max)
     return min + (max - min) * random_double();
 }
 
+inline int random_int()
+{
+    static std::uniform_int_distribution<int> distribution(0, 1);
+    static std::mt19937 generator;
+    static auto rand_generator = [&]()
+    {
+        return distribution(generator);
+    };
+    return rand_generator();
+}
+
+inline int random_int(int min, int max)
+{
+    return min + (max - min) * random_int();
+}
+
+
 inline double clamp(double x, double min, double max)
 {
     if (x < min)

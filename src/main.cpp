@@ -22,6 +22,7 @@ namespace fs = std::filesystem;
 
 #include "rtweekend.h"
 
+#include "bvh.h"
 #include "camera.h"
 #include "color.h"
 #include "hittable_list.h"
@@ -151,8 +152,10 @@ int main(int /*argc*/, char* /*argv[]*/)
     vec3 vup(0, 1, 0);
     auto dist_to_focus = 10.0;
     auto aperture = 0.0;
+    double time0 = 0.0;
+    double time1 = 1.0;
 
-    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
+    camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus, time0, time1);
 
     // Defocus blur aka depth of field
     //point3 lookfrom(13, 2, 3);
@@ -163,7 +166,8 @@ int main(int /*argc*/, char* /*argv[]*/)
 
     //camera cam(lookfrom, lookat, vup, 20, aspect_ratio, aperture, dist_to_focus);
 
-    auto world = random_scene();
+    auto world_hittable_list = random_scene();
+    auto world = bvh_node(world_hittable_list, time0, time1);
 
     //hittable_list world;
     //world.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<lambertian>(color(0.1, 0.2, 0.5))));
